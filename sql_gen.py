@@ -1,17 +1,20 @@
-import os
-from dotenv import load_dotenv
 import google.generativeai as genai
 
-load_dotenv()
-api_key = os.getenv("GEMINI_KEY")
+def connect_gemini(api_key):
+    if api_key is None:
+        raise ValueError("The environment variable is not set.")
 
-if api_key is None:
-    raise ValueError("A The environment variable is not set.")
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("models/gemini-2.0-flash")
+    return model
 
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("models/gemini-2.0-flash")
-
-pergunta = input("Digite: ")
-response = model.generate_content(pergunta)
-print("\n")
-print(response.text)
+def generate_query(context, search, model):
+    if search.lower() not in ["exit", "quit", "q", "\q", "leave"]:
+        prompt = context
+        prompt += search
+        prompt += "Return ONLY the SQL query, as its going directly into the terminal."
+        answer = model.generate_content(prompt)
+        query = answer.text[6:-3]
+    else:
+        query = None
+    return query
