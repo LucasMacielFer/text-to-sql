@@ -83,8 +83,9 @@ def main():
     chat, conn = start_services()
     exit = False
     while not exit:
+        df = None
         df = search_db(chat, conn)
-        if df:
+        if df is not None:
             print_data(df)
             save = input("Would you like to store your data? [Y/N] ")
 
