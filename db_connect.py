@@ -13,7 +13,7 @@ def connect_mysql(host, database, user, password, port):
         print(f"Connected succesfully to database {database} on MySQL.")
 
     except Exception as e:
-        raise ConnectionError(f"Failed to connect to database {database} on MySQL.")
+        print(f"Failed to connect to database {database} on MySQL.")
     return conn
 
 def connect_pgsql(host, database, user, password, port):
@@ -29,7 +29,7 @@ def connect_pgsql(host, database, user, password, port):
         print(f"Connected succesfully to database {database} on PostgreSQL.")
 
     except Exception as e:
-        raise ConnectionError(f"Failed to connect to database {database} on PostgreSQL.")
+        print(f"Failed to connect to database {database} on PostgreSQL.")
     return conn
 
 def get_context_mysql(conn):
@@ -86,8 +86,8 @@ def send_query(conn, query):
     result = None
     desc = None
 
-    if "drop" in query.lower():
-        print("You don't have access to drop tables, databases, indexes or constraints.")
+    if "drop" in query.lower() or "insert" in query.lower() or "alter" in query.lower():
+        print("You don't have access to drop, insert or alter.")
         return None, None
     try:
         cursor.execute(query)

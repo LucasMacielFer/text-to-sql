@@ -23,8 +23,10 @@ def start_services():
             password = os.getenv("MYSQL_PASSWORD")
             port = os.getenv("MYSQL_PORT")
             conn = connect_mysql(host, db, user, password, port)
-            context = get_context_mysql(conn)
-            dbms_selected = True
+            if conn:
+                dbms_selected = True
+                context = get_context_mysql(conn)
+
 
         elif dbms == "2":
             db = input("What database do you want to connect to? ")
@@ -33,8 +35,10 @@ def start_services():
             password = os.getenv("PGSQL_PASSWORD")
             port = os.getenv("PGSQL_PORT")
             conn = connect_pgsql(host, db, user, password, port)
-            context = get_context_pgsql(conn)
-            dbms_selected = True
+            if conn:
+                dbms_selected = True
+                context = get_context_pgsql(conn)
+
 
         else:
             print("Invalid DBMS selection.\n")
@@ -80,11 +84,12 @@ def main():
     exit = False
     while not exit:
         df = search_db(chat, conn)
-        print_data(df)
-        save = input("Would you like to store your data? [Y/N] ")
+        if df:
+            print_data(df)
+            save = input("Would you like to store your data? [Y/N] ")
 
-        if save.lower() in ["y", "yes"]:
-            manage_saving(df)
+            if save.lower() in ["y", "yes"]:
+                manage_saving(df)
 
         leave = input("Would you like to make another search? [Y/N] ")
         if leave.lower() in ["no", "n"]:
