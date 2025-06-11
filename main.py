@@ -1,46 +1,94 @@
 from db_connect import *
 from sql_gen import *
+from dataframe import *
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-api_key = os.getenv("GEMINI_KEY")
-model = connect_gemini(api_key)
+def start_services():
+    load_dotenv()
+    api_key = os.getenv("GEMINI_KEY")
+    model = connect_gemini(api_key)
 
-dbms = input("What Database Manaement System would you like to connect to?\n" \
-             "[1] MySQL\n" \
-             "[2] PostgreSQL\n\n")
+    dbms_selected = False
 
-if dbms == "1":
-    db = input("What database do you want to connect to? ")
-    host = os.getenv("MYSQL_HOST")
-    user = os.getenv("MYSQL_USER")
-    password = os.getenv("MYSQL_PASSWORD")
-    port = os.getenv("MYSQL_PORT")
-    conn = connect_mysql(host, db, user, password, port)
-    context = get_context_mysql(conn)
+    while not dbms_selected:
+        dbms = input("What Database Manaement System would you like to connect to?\n" \
+                    "[1] MySQL\n" \
+                    "[2] PostgreSQL\n\n")
 
-elif dbms == "2":
-    db = input("What database do you want to connect to? ")
-    host = os.getenv("PGSQL_HOST")
-    user = os.getenv("PGSQL_USER")
-    password = os.getenv("PGSQL_PASSWORD")
-    port = os.getenv("PGSQL_PORT")
-    conn = connect_pgsql(host, db, user, password, port)
-    context = get_context_pgsql(conn)
+        if dbms == "1":
+            db = input("What database do you want to connect to? ")
+            host = os.getenv("MYSQL_HOST")
+            user = os.getenv("MYSQL_USER")
+            password = os.getenv("MYSQL_PASSWORD")
+            port = os.getenv("MYSQL_PORT")
+            conn = connect_mysql(host, db, user, password, port)
+            context = get_context_mysql(conn)
+            dbms_selected = True
 
-else:
-    raise ValueError("Invalid DBMS selection.")
+        elif dbms == "2":
+            db = input("What database do you want to connect to? ")
+            host = os.getenv("PGSQL_HOST")
+            user = os.getenv("PGSQL_USER")
+            password = os.getenv("PGSQL_PASSWORD")
+            port = os.getenv("PGSQL_PORT")
+            conn = connect_pgsql(host, db, user, password, port)
+            context = get_context_pgsql(conn)
+            dbms_selected = True
 
-while True:
-    search = input("Your search: ")
-    query = generate_query(context, search, model)
+        else:
+            print("Invalid DBMS selection.\n")
+    
+    chat = start_chat(model, context)
+    return chat, conn
+
+def search_db(chat, conn):
+    df = None
+    desc = None
+    result = None
+    search = input("Search in database: ")
+    query = generate_query(search, chat)
+
     if query:
-        print(query)
         result, desc = send_query(conn, query)
-    else:
-        break
 
     if desc and result:
-        print(desc)
-        print(result)
+        df = create_df(desc, result)
+
+    return df
+
+def manage_saving(df):
+    options = ["xml", "csv", "xlsx", "json", None]
+    print("\n"\
+                "How would you like to store your data?\n"\
+                "[1] Save data as XML file\n" \
+                "[2] Save data as CSV file\n" \
+                "[3] Save data as EXCEL table\n" \
+                "[4] Save data as JSON file\n")
+
+    op = input("Select: ")
+
+    if op.lower() not in ["1", "2", "3", "4"]:
+        op = 4
+    
+    selection = options[int(op)-1]
+    if selection:
+        export(df, selection)
+
+def main():
+    chat, conn = start_services()
+    exit = False
+    while not exit:
+        df = search_db(chat, conn)
+        print_data(df)
+        save = input("Would you like to store your data? [Y/N] ")
+
+        if save.lower() in ["y", "yes"]:
+            manage_saving(df)
+
+        leave = input("Would you like to make another search? [Y/N] ")
+        if leave.lower() in ["no", "n"]:
+            exit = True
+
+if __name__=="__main__":
+    main()

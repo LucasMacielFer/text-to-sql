@@ -85,6 +85,10 @@ def send_query(conn, query):
     cursor = conn.cursor()
     result = None
     desc = None
+
+    if "drop" in query.lower():
+        print("You don't have access to drop tables, databases, indexes or constraints.")
+        return None, None
     try:
         cursor.execute(query)
         result = cursor.fetchall()
