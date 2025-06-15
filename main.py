@@ -94,6 +94,7 @@ def main():
         leave = input("Would you like to make another search? [Y/N] ")
         if leave.lower() in ["no", "n"]:
             exit = True
+    close_connection(conn)
 
 if __name__=="__main__":
     main()
