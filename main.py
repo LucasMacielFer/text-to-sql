@@ -52,7 +52,6 @@ def search_db(chat, conn):
     result = None
     search = input("Search in database: ")
     query = generate_query(search, chat)
-
     if query:
         result, desc = send_query(conn, query)
 
@@ -73,7 +72,7 @@ def manage_saving(df):
     op = input("Select: ")
 
     if op.lower() not in ["1", "2", "3", "4"]:
-        op = 4
+        op = 5
     
     selection = options[int(op)-1]
     if selection:
