@@ -86,8 +86,8 @@ def send_query(conn, query):
     result = None
     desc = None
 
-    if "drop" in query.lower() or "insert" in query.lower() or "alter" in query.lower():
-        print("You don't have access to drop, insert or alter.")
+    if "drop" in query.lower() or "insert" in query.lower() or "delete" in query.lower() or "alter" in query.lower():
+        print("You don't have access to drop, insert, delete or alter.")
         return None, None
     try:
         cursor.execute(query)
